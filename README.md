@@ -12,19 +12,19 @@ The system is split into specialized microservices to ensure scalability, modula
 
 ```mermaid
 graph TD
-    User((User)) -->|Browser| Frontend[Frontend Service\n(Streamlit)]
-    Frontend -->|HTTP API| Core[RAG Core Service\n(FastAPI)]
+    User((User)) -->|Browser| Frontend[Frontend Service (Streamlit)]
+    Frontend -->|HTTP API| Core[RAG Core Service (FastAPI)]
     
     subgraph "Processing Pipeline"
-        Core -->|HTTP| Parser[Parser Service\n(Detectron2 / OCR)]
-        Core -->|HTTP| Vision[Vision Service\n(Moondream / Qwen / Ollama)]
-        Vision -.->|Network| Ollama[Ollama Provider\n(Gemma3 / Granite)]
+        Core -->|HTTP| Parser[Parser Service (Detectron2 / OCR)]
+        Core -->|HTTP| Vision[Vision Service (Moondream / Qwen / Ollama)]
+        Vision -.->|Network| Ollama[Ollama Provider (Gemma3 / Granite)]
     end
     
     subgraph "Storage"
         Core -->|Read/Write| DB[(SQLite DB)]
         Core -->|Read/Write| FAISS[(FAISS Vector Store)]
-        SharedVol[Shared Volume\n/app/data]
+        SharedVol[Shared Volume /app/data]
     end
     
     Frontend -.->|Read Images| SharedVol
