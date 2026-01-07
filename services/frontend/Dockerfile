@@ -1,19 +1,22 @@
-FROM python:3.10-slim
+# Use an official Node runtime as a parent image
+FROM node:20-alpine
 
+# Set the working directory
 WORKDIR /app
 
-# Install dependencies first for caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-# 1. Copy the Streamlit config specifically first
-COPY .streamlit .streamlit
+# Install dependencies
+RUN npm install
 
-# 2. Copy the rest of the app
+# Copy the rest of the application code
 COPY . .
 
-# Expose Streamlit port
-EXPOSE 8501
+# Expose the port Vite runs on
+EXPOSE 5173
 
-# Run
-CMD ["streamlit", "run", "main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Start the development server
+# Note: The actual command is overridden in docker-compose.yml 
+# to ensure the host binding works (npm run dev -- --host)
+CMD ["npm", "run", "dev", "--", "--host"]

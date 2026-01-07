@@ -114,13 +114,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentSessionId, onSessionCha
                                     value={currentSessionId || "new"}
                                     onValueChange={(val) => onSessionChange(val === "new" ? null : val)}
                                 >
-                                    <SelectTrigger className="w-full">
+                                    <SelectTrigger className="w-full bg-background text-foreground border-border">
                                         <SelectValue placeholder="Select Session" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="new" className="text-primary font-medium">✨ Start New Session</SelectItem>
+                                    <SelectContent className="bg-popover text-popover-foreground border-border">
+                                        <SelectItem
+                                            value="new"
+                                            className="text-primary font-medium focus:bg-accent focus:text-accent-foreground"
+                                        >
+                                            ✨ Start New Session
+                                        </SelectItem>
                                         {sessions.map((sess) => (
-                                            <SelectItem key={sess.id} value={String(sess.id)}>
+                                            <SelectItem
+                                                key={sess.id}
+                                                value={String(sess.id)}
+                                                className="focus:bg-accent focus:text-accent-foreground"
+                                            >
                                                 {sess.name.substring(0, 20)}{sess.name.length > 20 && "..."} ({sess.docs})
                                             </SelectItem>
                                         ))}
@@ -140,7 +149,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentSessionId, onSessionCha
                                                 {VISION_MODELS.map((m) => (
                                                     <SelectItem key={m.value} value={m.value}>
                                                         <div className="flex flex-col items-start">
-                                                            <span className="font-medium">{m.label}</span>
+                                                            <span className="bg-popover text-popover-foreground border-border">{m.label}</span>
                                                             <span className="text-xs text-muted-foreground">{m.desc}</span>
                                                         </div>
                                                     </SelectItem>

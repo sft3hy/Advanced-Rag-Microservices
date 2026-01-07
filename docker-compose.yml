@@ -1,15 +1,20 @@
 services:
-  # 1. Frontend
+  # 1. Frontend (React + Vite)
   frontend:
-    build: ./services/frontend
+    build: 
+      context: ./services/frontend
+      dockerfile: Dockerfile
     container_name: smart_rag_frontend
     ports:
-      - "8501:8501"
+      - "5173:5173"  # Standard Vite Port
     environment:
-      - RAG_API_URL=http://rag_core:8000
-      - TEST=${TEST}
+      - VITE_API_URL=http://localhost:8000 # Browser talks to Host Localhost
+      - WATCHPACK_POLLING=true # Helps with hot-reload on Docker/Mac
     volumes:
-      - shared_data:/app/data
+      - ./services/frontend:/app
+      - /app/node_modules # Prevent host node_modules from breaking container
+    # Command to run Vite and expose it to the network
+    command: npm run dev -- --host
     depends_on:
       - rag_core
 
@@ -44,7 +49,7 @@ services:
     volumes:
       - shared_data:/app/data
 
-  # 4. Vision (CPU by default for Mac)
+  # 4. Vision
   vision:
     build: ./services/vision
     container_name: smart_rag_vision
@@ -53,32 +58,34 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - TEST=${TEST}
-      - OLLAMA_HOST_LOCAL=http://host.docker.internal:11434
+      # When running fully in Docker, we point to the ollama service name
+      - OLLAMA_HOST_LOCAL=http://ollama:11434
       - OLLAMA_HOST_PROD=http://ollama:11434
     volumes:
       - shared_data:/app/data
       - huggingface_cache:/root/.cache/huggingface
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      - ollama
 
-  # 5. Ollama (Only used if TEST=False)
-  # ollama:
-  #   image: ollama/ollama:latest
-  #   container_name: smart_rag_ollama
-  #   ports:
-  #     - "11434:11434"
-  #   volumes:
-  #     - ollama_storage:/root/.ollama
-    # Deploy block removed for Mac compatibility
+  # 5. Ollama (Enabled)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: smart_rag_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    tty: true # Keeps the container running
+    restart: unless-stopped
+
+  # 6. DB Viewer
   db_viewer:
     image: python:3.10-slim
     container_name: smart_rag_db_viewer
     ports:
       - "8080:8080"
     volumes:
-      # Map the same volume used by rag_core
       - shared_data:/data
-    # We explicitly run the install and start command
     command: >
       sh -c "pip install sqlite-web && sqlite_web /data/history.db -H 0.0.0.0 -p 8080"
 
